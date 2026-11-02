@@ -1,0 +1,181 @@
+<!-- Odoo Apps description page for purchase_split_grn (Odoo 16.0). Inline styles only: apps.odoo.com strips <style> and <script> blocks. -->
+<section style="max-width:1120px;margin:0 auto;padding:0 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#2b2b33;">
+
+<!-- ============================== HERO ============================== -->
+<div style="background:linear-gradient(120deg,#017E84 0%,#3d6b78 45%,#714B67 100%);border-radius:18px;padding:48px 40px 40px;color:#ffffff;margin-top:12px;">
+  <div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;opacity:.85;margin-bottom:10px;">Purchase &middot; Inventory &middot; Inbound Logistics</div>
+  <h1 style="font-size:40px;line-height:1.15;font-weight:700;margin:0 0 14px;color:#ffffff;">Split Receipts (GRN) by Date, Location &amp; Warehouse</h1>
+  <p style="font-size:19px;line-height:1.55;max-width:760px;margin:0 0 24px;color:#ffffff;opacity:.95;">Confirm one purchase order and get one receipt per expected arrival day, per destination location and per warehouse of your company. When a line&rsquo;s date, location or warehouse changes later, its stock moves follow it and receipts left empty are removed.</p>
+  <div>
+    <span style="display:inline-block;border:1px solid rgba(255,255,255,.7);border-radius:20px;padding:6px 14px;margin:0 8px 8px 0;font-size:14px;">Odoo 16.0</span>
+    <span style="display:inline-block;border:1px solid rgba(255,255,255,.7);border-radius:20px;padding:6px 14px;margin:0 8px 8px 0;font-size:14px;">Community &amp; Enterprise</span>
+    <span style="display:inline-block;border:1px solid rgba(255,255,255,.7);border-radius:20px;padding:6px 14px;margin:0 8px 8px 0;font-size:14px;">38 automated tests</span>
+    <span style="display:inline-block;border:1px solid rgba(255,255,255,.7);border-radius:20px;padding:6px 14px;margin:0 8px 8px 0;font-size:14px;">Arabic &middot; RTL</span>
+    <span style="display:inline-block;border:1px solid rgba(255,255,255,.7);border-radius:20px;padding:6px 14px;margin:0 8px 8px 0;font-size:14px;">Technical name: purchase_split_grn</span>
+    <span style="display:inline-block;border:1px solid rgba(255,255,255,.7);border-radius:20px;padding:6px 14px;margin:0 8px 8px 0;font-size:14px;">LGPL-3</span>
+  </div>
+</div>
+
+<!-- ============================== KEY NUMBERS ============================== -->
+<div style="display:flex;flex-wrap:wrap;margin:28px -8px 8px;">
+  <div style="flex:1 1 220px;margin:8px;background:#f6f4f6;border-radius:14px;padding:20px 22px;"><div style="font-size:30px;font-weight:700;color:#714B67;">3 criteria</div><div style="font-size:15px;color:#555;">Delivery date, destination location and warehouse, alone or combined</div></div>
+  <div style="flex:1 1 220px;margin:8px;background:#eef6f6;border-radius:14px;padding:20px 22px;"><div style="font-size:30px;font-weight:700;color:#017E84;">1 receipt</div><div style="font-size:15px;color:#555;">per arrival day &times; location &times; warehouse, created at confirmation</div></div>
+  <div style="flex:1 1 220px;margin:8px;background:#f6f4f6;border-radius:14px;padding:20px 22px;"><div style="font-size:30px;font-weight:700;color:#714B67;">0 empty receipts</div><div style="font-size:15px;color:#555;">Moves are re-routed on change and emptied receipts deleted</div></div>
+  <div style="flex:1 1 220px;margin:8px;background:#eef6f6;border-radius:14px;padding:20px 22px;"><div style="font-size:30px;font-weight:700;color:#017E84;">112 tests</div><div style="font-size:15px;color:#555;">38 of its own plus the 74 core <code>purchase_stock</code> tests, green with splitting on</div></div>
+</div>
+
+<!-- ============================== WHY ============================== -->
+<h2 style="font-size:28px;font-weight:700;margin:40px 0 6px;color:#2b2b33;">Why this module</h2>
+<p style="font-size:16px;color:#555;margin:0 0 18px;">Vendors rarely deliver a whole order at once, and different goods go to different parts of the warehouse &ndash; or to different warehouses. Standard Odoo still puts every line into one receipt.</p>
+<div style="display:flex;flex-wrap:wrap;margin:0 -10px;">
+  <div style="flex:1 1 440px;margin:10px;border:1px solid #f1d6d6;background:#fff8f8;border-radius:14px;padding:24px 26px;">
+    <h3 style="font-size:19px;font-weight:700;color:#b33939;margin:0 0 12px;">In standard Odoo 16</h3>
+    <ul style="font-size:15px;line-height:1.65;margin:0;padding-left:20px;color:#3a3a42;">
+      <li>A confirmed PO creates <b>one receipt</b>, whatever the expected arrival dates of its lines.</li>
+      <li>The receipt&rsquo;s <b>scheduled date</b> is the earliest line date, so later deliveries look late or early.</li>
+      <li>Every line is received into the <b>same destination</b> (the operation type&rsquo;s default).</li>
+      <li>Storekeepers split receipts by hand, creating <b>backorders</b> and moving lines between transfers.</li>
+      <li>Changing a line date after confirmation only updates the move <b>deadline</b>; the receipt stays as it was.</li>
+      <li>Extra quantity added later goes to the <b>first open receipt</b>, not the one for that delivery.</li>
+      <li>A PO is received in <b>one warehouse</b> (its <b>Deliver To</b>); goods for another branch need a second PO or a later inter-warehouse transfer.</li>
+    </ul>
+  </div>
+  <div style="flex:1 1 440px;margin:10px;border:1px solid #cfe7e7;background:#f4fbfb;border-radius:14px;padding:24px 26px;">
+    <h3 style="font-size:19px;font-weight:700;color:#017E84;margin:0 0 12px;">With this module</h3>
+    <ul style="font-size:15px;line-height:1.65;margin:0;padding-left:20px;color:#3a3a42;">
+      <li>One receipt per <b>expected arrival day</b>, per <b>destination location</b>, or per both.</li>
+      <li>Each receipt carries its own <b>Grouped Arrival Date</b> and a matching scheduled date.</li>
+      <li>A <b>Destination Location</b> column on PO lines, defaulting to the order&rsquo;s receipt location.</li>
+      <li>Receipts are ready to validate as delivered: <b>no manual splitting</b>.</li>
+      <li>Changing a line&rsquo;s date or location <b>moves its stock moves</b> to the matching receipt; empty receipts are deleted.</li>
+      <li>New lines and quantity changes land in the receipt that matches <b>the line&rsquo;s date and location</b>.</li>
+      <li>A <b>Receiving Warehouse</b> per line: one PO, receipts created directly in each warehouse with <b>its own receipt operation, sequence and routes</b>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================== HOW IT WORKS ============================== -->
+<h2 style="font-size:28px;font-weight:700;margin:40px 0 6px;color:#2b2b33;">How it works</h2>
+<p style="font-size:16px;color:#555;margin:0 0 18px;">No new menus to learn: it works on the purchase orders and receipts you already use.</p>
+<div style="display:flex;flex-wrap:wrap;margin:0 -8px;">
+  <div style="flex:1 1 200px;margin:8px;border-radius:12px;border:1px solid #e3dde2;padding:18px;"><div style="width:34px;height:34px;border-radius:50%;background:#714B67;color:#fff;font-weight:700;text-align:center;line-height:34px;margin-bottom:10px;">1</div><div style="font-weight:700;margin-bottom:4px;">Enable</div><div style="font-size:14px;color:#555;">Tick <b>Split Receipts (GRN)</b> in Purchase settings and choose any of the three criteria.</div></div>
+  <div style="flex:1 1 200px;margin:8px;border-radius:12px;border:1px solid #e3dde2;padding:18px;"><div style="width:34px;height:34px;border-radius:50%;background:#714B67;color:#fff;font-weight:700;text-align:center;line-height:34px;margin-bottom:10px;">2</div><div style="font-weight:700;margin-bottom:4px;">Plan the lines</div><div style="font-size:14px;color:#555;">Set an <b>Expected Arrival</b>, <b>Receiving Warehouse</b> and <b>Destination Location</b> on each PO line.</div></div>
+  <div style="flex:1 1 200px;margin:8px;border-radius:12px;border:1px solid #e3dde2;padding:18px;"><div style="width:34px;height:34px;border-radius:50%;background:#714B67;color:#fff;font-weight:700;text-align:center;line-height:34px;margin-bottom:10px;">3</div><div style="font-weight:700;margin-bottom:4px;">Confirm</div><div style="font-size:14px;color:#555;">Lines are grouped by day, location and warehouse; one receipt is created per group.</div></div>
+  <div style="flex:1 1 200px;margin:8px;border-radius:12px;border:1px solid #cfe7e7;background:#f4fbfb;padding:18px;"><div style="width:34px;height:34px;border-radius:50%;background:#017E84;color:#fff;font-weight:700;text-align:center;line-height:34px;margin-bottom:10px;">4</div><div style="font-weight:700;margin-bottom:4px;">Stay in sync</div><div style="font-size:14px;color:#555;">Edit dates, locations, warehouses or quantities later; moves follow and empty receipts disappear.</div></div>
+</div>
+
+<!-- ============================== FEATURES ============================== -->
+<h2 style="font-size:28px;font-weight:700;margin:40px 0 6px;color:#2b2b33;">Features</h2>
+<p style="font-size:16px;color:#555;margin:0 0 4px;">Screenshots use Odoo 16 demo data from <b>Azure Interior</b>: P00034 with six lines due on three different days into <b>Cold Room</b>, <b>Bulk Racks</b> and <b>Dry Store</b> of the <b>San Francisco</b> warehouse, and P00036 split between San Francisco and a second warehouse, <b>Jeddah DC</b>.</p>
+
+<div style="margin:44px 0 0;">
+  <div style="font-size:13px;font-weight:700;color:#017E84;letter-spacing:1px;text-transform:uppercase;">Settings</div>
+  <h3 style="font-size:23px;font-weight:700;margin:4px 0 8px;">One switch, three independent criteria</h3>
+  <p style="font-size:15px;line-height:1.6;color:#555;margin:0 0 14px;"><b>Purchase &rsaquo; Configuration &rsaquo; Settings &rsaquo; Inbound Logistics</b>. Tick <b>Split Receipts (GRN)</b> (off by default), then any combination of <b>Split by Delivery Date</b>, <b>Split by Destination Location</b> and <b>Split by Warehouse</b> (shown when the company uses several warehouses). Settings are per company. With the main switch on and no criterion ticked, a warning reminds you that nothing will be split.</p>
+  <img src="psg_01_settings_en.png" alt="Inbound Logistics section in Purchase settings with Split Receipts and its two criteria" style="width:100%;max-width:1000px;border:1px solid #e1e1e6;border-radius:10px;box-shadow:0 6px 24px rgba(30,30,60,.10);"/>
+</div>
+
+<div style="margin:44px 0 0;">
+  <div style="font-size:13px;font-weight:700;color:#017E84;letter-spacing:1px;text-transform:uppercase;">Feature 1</div>
+  <h3 style="font-size:23px;font-weight:700;margin:4px 0 8px;">Plan arrival day and destination per line</h3>
+  <p style="font-size:15px;line-height:1.6;color:#555;margin:0 0 14px;">When splitting by location is on, PO lines get a <b>Destination Location</b> column. It defaults to the order&rsquo;s <b>Deliver To</b> location and can be changed per line to any internal or transit location of the same warehouse. When splitting by date is on, the <b>Expected Arrival</b> column is shown by default. Here, six lines in one warehouse confirm into <b>4 receipts</b>.</p>
+  <img src="psg_02_po_lines.png" alt="Confirmed purchase order with Expected Arrival and Destination Location per line and a 4 Receipt smart button" style="width:100%;border:1px solid #e1e1e6;border-radius:10px;box-shadow:0 6px 24px rgba(30,30,60,.10);"/>
+</div>
+
+<div style="margin:44px 0 0;">
+  <div style="font-size:13px;font-weight:700;color:#017E84;letter-spacing:1px;text-transform:uppercase;">Feature 2</div>
+  <h3 style="font-size:23px;font-weight:700;margin:4px 0 8px;">One receipt per arrival day and destination</h3>
+  <p style="font-size:15px;line-height:1.6;color:#555;margin:0 0 14px;">Lines sharing both the same day and the same destination share a receipt. Frozen Peas and Chilled Yoghurt (Cold Room, 3 Nov) are received together; Steel Pallet Rack Beam (Bulk Racks, same day) gets its own receipt; Frozen Chicken (Cold Room, 10 Nov) another. The optional <b>Grouped Arrival Date</b> column shows each receipt&rsquo;s key.</p>
+  <img src="psg_03_receipts_list.png" alt="Four receipts of one purchase order, each with its own destination and grouped arrival date" style="width:100%;margin-bottom:22px;border:1px solid #e1e1e6;border-radius:10px;box-shadow:0 6px 24px rgba(30,30,60,.10);"/>
+  <img src="psg_04_receipt_form.png" alt="Receipt WH/IN/00051 into Cold Room with Grouped Arrival Date and two products" style="width:100%;border:1px solid #e1e1e6;border-radius:10px;box-shadow:0 6px 24px rgba(30,30,60,.10);"/>
+  <div style="font-size:13px;color:#777;margin:6px 0 0;">The receipt&rsquo;s destination, scheduled date and deadline all match its lines; it is <b>Ready</b> to validate.</div>
+  <div style="background:#f4fbfb;border-left:4px solid #017E84;border-radius:8px;padding:16px 20px;font-size:15px;line-height:1.6;margin-top:14px;"><b>Grouping rule:</b> lines are grouped by <b>calendar day</b> in the buyer&rsquo;s timezone (the PO&rsquo;s purchase representative, otherwise the current user). Example in Asia/Riyadh: 09:00 and 23:00 on 3 Nov are one receipt; 23:30 UTC on 3 Nov is already 4 Nov locally and goes with 4 Nov.</div>
+</div>
+
+<div style="margin:44px 0 0;">
+  <div style="font-size:13px;font-weight:700;color:#017E84;letter-spacing:1px;text-transform:uppercase;">Feature 3</div>
+  <h3 style="font-size:23px;font-weight:700;margin:4px 0 8px;">Receipts follow changes made after confirmation</h3>
+  <p style="font-size:15px;line-height:1.6;color:#555;margin:0 0 14px;">On P00035, Basmati Rice is due 4 Nov and Olive Oil 7 Nov: <b>2 receipts</b>. The vendor confirms both for 4 Nov; the buyer updates the Olive Oil date.</p>
+  <img src="psg_05_change_before.png" alt="Purchase order P00035 with two lines on different dates and 2 receipts" style="width:100%;margin-bottom:22px;border:1px solid #e1e1e6;border-radius:10px;box-shadow:0 6px 24px rgba(30,30,60,.10);"/>
+  <img src="psg_06_change_after.png" alt="Same purchase order after the date change, now with 1 receipt" style="width:100%;border:1px solid #e1e1e6;border-radius:10px;box-shadow:0 6px 24px rgba(30,30,60,.10);"/>
+  <div style="font-size:13px;color:#777;margin:6px 0 22px;">The Olive Oil move moved into the 4 Nov receipt; its old receipt was left empty and deleted. The smart button now shows <b>1 Receipt</b>.</div>
+  <img src="psg_07_merged_receipt.png" alt="Receipt WH/IN/00054 holding both Basmati Rice and Olive Oil" style="width:100%;border:1px solid #e1e1e6;border-radius:10px;box-shadow:0 6px 24px rgba(30,30,60,.10);"/>
+  <div style="background:#f4fbfb;border-left:4px solid #017E84;border-radius:8px;padding:16px 20px;font-size:15px;line-height:1.6;margin-top:14px;"><b>What happens on a change:</b> the line&rsquo;s open, unprocessed moves go to the receipt matching its new day and destination. If none exists and the old receipt held only those moves, that receipt is <b>re-dated / re-located in place</b> and keeps its reference. Otherwise a new receipt is created. Any receipt left without moves is deleted. The same applies to new lines and quantity changes on confirmed orders.</div>
+</div>
+
+<div style="margin:44px 0 0;">
+  <div style="font-size:13px;font-weight:700;color:#017E84;letter-spacing:1px;text-transform:uppercase;">Feature 4</div>
+  <h3 style="font-size:23px;font-weight:700;margin:4px 0 8px;">Receive one order in several warehouses</h3>
+  <p style="font-size:15px;line-height:1.6;color:#555;margin:0 0 14px;">With <b>Split by Warehouse</b> on, PO lines get a <b>Receiving Warehouse</b> column. It defaults to the warehouse of the order&rsquo;s <b>Deliver To</b>. Choose another warehouse of the same company and the line&rsquo;s <b>Destination Location</b> switches to that warehouse&rsquo;s receipt location; the location list is limited to that warehouse (plus transit locations). P00036 is one order for San Francisco and Jeddah DC.</p>
+  <img src="psg_10_po_warehouses.png" alt="Purchase order P00036 with lines received in San Francisco and in Jeddah DC" style="width:100%;margin-bottom:22px;border:1px solid #e1e1e6;border-radius:10px;box-shadow:0 6px 24px rgba(30,30,60,.10);"/>
+  <img src="psg_11_receipts_warehouses.png" alt="Four receipts of P00036: two WH/IN receipts and two JED/IN receipts" style="width:100%;border:1px solid #e1e1e6;border-radius:10px;box-shadow:0 6px 24px rgba(30,30,60,.10);"/>
+  <div style="font-size:13px;color:#777;margin:6px 0 0;">Jeddah lines are received on <b>JED/IN</b> receipts, numbered by Jeddah&rsquo;s own sequence; San Francisco lines on <b>WH/IN</b>. Combined here with location splitting, so each warehouse also gets one receipt per destination.</div>
+  <div style="background:#f4fbfb;border-left:4px solid #017E84;border-radius:8px;padding:16px 20px;font-size:15px;line-height:1.6;margin-top:14px;"><b>How it is done:</b> each receipt for another warehouse is created with <b>that warehouse&rsquo;s receipt operation type</b>, and its moves carry that warehouse and operation. So the receipt is numbered by that warehouse&rsquo;s sequence, appears on its Inventory overview, and follows its own reception steps and push rules (e.g. Input &rsaquo; Stock in two-step reception). Lines for the order&rsquo;s own warehouse keep the order&rsquo;s operation type. Only warehouses of the order&rsquo;s company can be chosen.</div>
+</div>
+
+<div style="margin:44px 0 0;">
+  <div style="font-size:13px;font-weight:700;color:#017E84;letter-spacing:1px;text-transform:uppercase;">Feature 5</div>
+  <h3 style="font-size:23px;font-weight:700;margin:4px 0 8px;">Arabic translation and right-to-left layout</h3>
+  <p style="font-size:15px;line-height:1.6;color:#555;margin:0 0 14px;">Every label, help text and error message ships in Arabic (<b>ar_001</b>). Views use Odoo&rsquo;s direction-aware layout, so the settings and order lines mirror correctly.</p>
+  <img src="psg_08_settings_ar.png" alt="Inbound Logistics settings in Arabic, right-to-left" style="width:100%;max-width:1000px;margin-bottom:22px;border:1px solid #e1e1e6;border-radius:10px;box-shadow:0 6px 24px rgba(30,30,60,.10);"/>
+  <img src="psg_09_po_lines_ar.png" alt="Purchase order P00036 with Receiving Warehouse and Destination Location columns in Arabic, right-to-left" style="width:100%;border:1px solid #e1e1e6;border-radius:10px;box-shadow:0 6px 24px rgba(30,30,60,.10);"/>
+</div>
+
+<!-- ============================== CORNER CASES ============================== -->
+<h2 style="font-size:28px;font-weight:700;margin:44px 0 6px;color:#2b2b33;">Built for real-world corner cases</h2>
+<p style="font-size:16px;color:#555;margin:0 0 18px;">Behaviour you can rely on in daily use, most of it pinned down by the test suite.</p>
+<div style="display:flex;flex-wrap:wrap;margin:0 -8px;font-size:15px;line-height:1.55;">
+  <div style="flex:1 1 320px;margin:8px;padding:16px 18px;border:1px solid #e8e8ee;border-radius:12px;"><b>Partly processed moves</b><br/><span style="color:#555;">Moves where a done quantity was already entered are never moved; the storekeeper&rsquo;s work stays where it is.</span></div>
+  <div style="flex:1 1 320px;margin:8px;padding:16px 18px;border:1px solid #e8e8ee;border-radius:12px;"><b>Multi-step reception</b><br/><span style="color:#555;">Lines default to the warehouse&rsquo;s Input, in the order&rsquo;s warehouse or another one. If a receipt is already chained to the Input &rsaquo; Stock transfer, changing its destination from the PO is blocked with a clear message.</span></div>
+  <div style="flex:1 1 320px;margin:8px;padding:16px 18px;border:1px solid #e8e8ee;border-radius:12px;"><b>Reordering rules</b><br/><span style="color:#555;">Lines from replenishment keep the order&rsquo;s destination; their moves still reach the rule&rsquo;s sub-location exactly as in standard Odoo.</span></div>
+  <div style="flex:1 1 320px;margin:8px;padding:16px 18px;border:1px solid #e8e8ee;border-radius:12px;"><b>Location in the wrong warehouse</b><br/><span style="color:#555;">A line location that does not belong to the line&rsquo;s <b>Receiving Warehouse</b> is rejected with a clear message.</span></div>
+  <div style="flex:1 1 320px;margin:8px;padding:16px 18px;border:1px solid #e8e8ee;border-radius:12px;"><b>Moving a line to another warehouse</b><br/><span style="color:#555;">After confirmation its moves go to a receipt of the new warehouse. A receipt is never re-numbered across warehouses: a new one is created and the emptied one deleted.</span></div>
+  <div style="flex:1 1 320px;margin:8px;padding:16px 18px;border:1px solid #e8e8ee;border-radius:12px;"><b>Changing the order&rsquo;s Deliver To</b><br/><span style="color:#555;">Before confirmation, every line moves to the new warehouse: line warehouse and location are recomputed together, without tripping the location check.</span></div>
+  <div style="flex:1 1 320px;margin:8px;padding:16px 18px;border:1px solid #e8e8ee;border-radius:12px;"><b>Quantity changes</b><br/><span style="color:#555;">Increases and decreases stay in the line&rsquo;s own receipt; decreasing below the received quantity is refused, as in standard Odoo.</span></div>
+  <div style="flex:1 1 320px;margin:8px;padding:16px 18px;border:1px solid #e8e8ee;border-radius:12px;"><b>Dropship and services</b><br/><span style="color:#555;">Customer-destination orders are never split by location; service lines and sections/notes are ignored.</span></div>
+  <div style="flex:1 1 320px;margin:8px;padding:16px 18px;border:1px solid #e8e8ee;border-radius:12px;"><b>Cancel &amp; re-confirm</b><br/><span style="color:#555;">Cancelling the PO cancels all its receipts; running picking creation again never duplicates moves.</span></div>
+  <div style="flex:1 1 320px;margin:8px;padding:16px 18px;border:1px solid #e8e8ee;border-radius:12px;"><b>Switching a criterion off</b><br/><span style="color:#555;">Existing receipts stay as they are. With the warehouse criterion off, lines are received in the order&rsquo;s own warehouse again.</span></div>
+  <div style="flex:1 1 320px;margin:8px;padding:16px 18px;border:1px solid #e8e8ee;border-radius:12px;"><b>Multi-company</b><br/><span style="color:#555;">Settings are stored per company; each order follows the settings of its own company, and only warehouses of that company can be chosen.</span></div>
+</div>
+
+<!-- ============================== SECURITY ============================== -->
+<h2 style="font-size:28px;font-weight:700;margin:44px 0 6px;color:#2b2b33;">Security</h2>
+<p style="font-size:16px;color:#555;margin:0 0 18px;">No new access rights: the module works within standard Purchase and Inventory permissions.</p>
+<table style="width:100%;border-collapse:collapse;font-size:15px;">
+  <thead><tr style="background:#714B67;color:#fff;"><th style="text-align:left;padding:10px 14px;">Who</th><th style="text-align:left;padding:10px 14px;">Sees / can do</th></tr></thead>
+  <tbody>
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;">Administration / Settings</td><td style="padding:10px 14px;">Changes the <b>Inbound Logistics</b> settings (standard Settings access).</td></tr>
+    <tr style="border-bottom:1px solid #eee;background:#fafafa;"><td style="padding:10px 14px;">Users with <b>Storage Locations</b> enabled</td><td style="padding:10px 14px;">See and edit the <b>Destination Location</b> column on PO lines.</td></tr>
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;">Users with <b>Multi-Warehouses</b></td><td style="padding:10px 14px;">See the <b>Split by Warehouse</b> option; the <b>Receiving Warehouse</b> column appears on PO lines while it is on.</td></tr>
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;">All internal users</td><td style="padding:10px 14px;">See the line <b>Expected Arrival</b> column by default while splitting by date is on (hidden technical group, set automatically from the setting).</td></tr>
+    <tr style="border-bottom:1px solid #eee;background:#fafafa;"><td style="padding:10px 14px;">Any purchase user confirming or editing a PO</td><td style="padding:10px 14px;">Receipts are created and empty ones deleted on their behalf, like standard receipt creation.</td></tr>
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;">Multi-company</td><td style="padding:10px 14px;">Settings per company; line warehouses and locations limited to the order&rsquo;s company.</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================== TECHNICAL ============================== -->
+<h2 style="font-size:28px;font-weight:700;margin:44px 0 6px;color:#2b2b33;">Technical details</h2>
+<table style="width:100%;border-collapse:collapse;font-size:15px;">
+  <tbody>
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;width:240px;color:#777;">Odoo version</td><td style="padding:10px 14px;">16.0, Community and Enterprise</td></tr>
+    <tr style="border-bottom:1px solid #eee;background:#fafafa;"><td style="padding:10px 14px;width:240px;color:#777;">Depends on</td><td style="padding:10px 14px;"><code>purchase_stock</code></td></tr>
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;width:240px;color:#777;">Python dependency</td><td style="padding:10px 14px;">None</td></tr>
+    <tr style="border-bottom:1px solid #eee;background:#fafafa;"><td style="padding:10px 14px;width:240px;color:#777;">Menus</td><td style="padding:10px 14px;">No new menus; works on Purchase &rsaquo; Orders and their receipts</td></tr>
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;width:240px;color:#777;">Settings</td><td style="padding:10px 14px;">Purchase &rsaquo; Configuration &rsaquo; Settings &rsaquo; Inbound Logistics</td></tr>
+    <tr style="border-bottom:1px solid #eee;background:#fafafa;"><td style="padding:10px 14px;width:240px;color:#777;">Models</td><td style="padding:10px 14px;">Extends <code>res.company</code>, <code>res.config.settings</code>, <code>purchase.order</code>, <code>purchase.order.line</code> (new <code>warehouse_id</code>, <code>location_dest_id</code>), <code>stock.picking</code> (new <code>split_grn_date</code>)</td></tr>
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;width:240px;color:#777;">Automated tests</td><td style="padding:10px 14px;">38 tests: settings, each criterion alone and combined, timezone grouping, receiving one split receipt, post-confirmation date/location/warehouse changes, re-keying and cleanup, new lines, quantity changes, processed moves, multi-step reception (own and other warehouse), receiving into another warehouse, reordering rules, cancellation. The 74 core <code>purchase_stock</code> tests also pass with all three criteria enabled.</td></tr>
+    <tr style="border-bottom:1px solid #eee;background:#fafafa;"><td style="padding:10px 14px;width:240px;color:#777;">Languages</td><td style="padding:10px 14px;">English, Arabic (<code>ar_001</code>)</td></tr>
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;width:240px;color:#777;">License</td><td style="padding:10px 14px;">LGPL-3</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================== CONTACT ============================== -->
+<div style="margin:52px 0 40px;background:linear-gradient(120deg,#714B67 0%,#017E84 100%);border-radius:18px;padding:36px 40px;color:#fff;">
+  <h2 style="font-size:26px;font-weight:700;margin:0 0 8px;color:#fff;">Support &amp; customization</h2>
+  <p style="font-size:16px;line-height:1.6;margin:0 0 20px;color:#fff;opacity:.95;">Questions, a demo, or an adaptation to your own process? Get in touch.</p>
+  <a href="mailto:ibrahim.yahiah@gmail.com" style="display:inline-block;background:#fff;color:#714B67;font-weight:700;text-decoration:none;border-radius:8px;padding:12px 22px;margin:0 12px 10px 0;">&#9993;&nbsp; ibrahim.yahiah@gmail.com</a>
+  <a href="https://www.linkedin.com/in/ibrahim-yahia" target="_blank" rel="noopener" style="display:inline-block;border:2px solid #fff;color:#fff;font-weight:700;text-decoration:none;border-radius:8px;padding:10px 22px;margin:0 0 10px 0;">LinkedIn: Ibrahim Yahia</a>
+  <p style="font-size:13px;margin:14px 0 0;opacity:.8;color:#fff;">Author: Ibrahim Yahia &middot; License: LGPL-3</p>
+</div>
+
+</section>

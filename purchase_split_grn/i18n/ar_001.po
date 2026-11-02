@@ -1,0 +1,277 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* purchase_split_grn
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-01 16:16+0000\n"
+"PO-Revision-Date: 2026-11-01 16:16+0000\n"
+"Last-Translator: Ibrahim Yahia\n"
+"Language-Team: Arabic\n"
+"Language: ar_001\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+
+#. module: purchase_split_grn
+#: model_terms:ir.ui.view,arch_db:purchase_split_grn.res_config_settings_view_form_purchase_split_grn
+msgid ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
+"specific.\" groups=\"base.group_multi_company\"/>"
+msgstr ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"القيم المحددة هنا خاصة "
+"بالشركة.\" groups=\"base.group_multi_company\"/>"
+
+#. module: purchase_split_grn
+#: model:ir.model,name:purchase_split_grn.model_res_company
+msgid "Companies"
+msgstr "الشركات"
+
+#. module: purchase_split_grn
+#: model:ir.model,name:purchase_split_grn.model_res_config_settings
+msgid "Config Settings"
+msgstr "تهيئة الإعدادات"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,help:purchase_split_grn.field_res_company__split_grn_by_location
+#: model:ir.model.fields,help:purchase_split_grn.field_res_config_settings__split_grn_by_location
+msgid ""
+"Create one receipt per destination location of the purchase order lines."
+msgstr "إنشاء إيصال استلام واحد لكل موقع وجهة في بنود أمر الشراء."
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,help:purchase_split_grn.field_res_company__split_grn_by_date
+#: model:ir.model.fields,help:purchase_split_grn.field_res_config_settings__split_grn_by_date
+msgid ""
+"Create one receipt per expected arrival date of the purchase order lines."
+msgstr "إنشاء إيصال استلام واحد لكل تاريخ وصول متوقع في بنود أمر الشراء."
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_purchase_order_line__location_dest_id
+msgid "Destination Location"
+msgstr "موقع الوجهة"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,help:purchase_split_grn.field_stock_picking__split_grn_date
+msgid "Expected arrival date this receipt groups purchase order lines by."
+msgstr "تاريخ الوصول المتوقع الذي يجمع هذا الإيصال بنود أمر الشراء على أساسه."
+
+#. module: purchase_split_grn
+#: model_terms:ir.ui.view,arch_db:purchase_split_grn.res_config_settings_view_form_purchase_split_grn
+msgid ""
+"Generate separate receipts for a confirmed purchase order based on line "
+"criteria"
+msgstr ""
+"إنشاء إيصالات استلام منفصلة لأمر الشراء المؤكد بناءً على معايير البنود"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_stock_picking__split_grn_date
+msgid "Grouped Arrival Date"
+msgstr "تاريخ الوصول المجمّع"
+
+#. module: purchase_split_grn
+#: model_terms:ir.ui.view,arch_db:purchase_split_grn.res_config_settings_view_form_purchase_split_grn
+msgid "Inbound Logistics"
+msgstr "الخدمات اللوجستية الواردة"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,help:purchase_split_grn.field_res_company__split_grn_by_warehouse
+#: model:ir.model.fields,help:purchase_split_grn.field_res_config_settings__split_grn_by_warehouse
+msgid ""
+"Let purchase order lines be received in other warehouses of the same "
+"company, with one receipt per warehouse using its own receipt operation."
+msgstr ""
+"السماح باستلام بنود أمر الشراء في مستودعات أخرى تابعة للشركة نفسها، مع إيصال"
+" استلام واحد لكل مستودع باستخدام عملية الاستلام الخاصة به."
+
+#. module: purchase_split_grn
+#: model_terms:ir.ui.view,arch_db:purchase_split_grn.res_config_settings_view_form_purchase_split_grn
+msgid "One receipt per destination location set on the order lines"
+msgstr "إيصال استلام واحد لكل موقع وجهة محدد في بنود الأمر"
+
+#. module: purchase_split_grn
+#: model_terms:ir.ui.view,arch_db:purchase_split_grn.res_config_settings_view_form_purchase_split_grn
+msgid ""
+"One receipt per expected arrival date (lines due the same day are grouped)"
+msgstr ""
+"إيصال استلام واحد لكل تاريخ وصول متوقع (تُجمع البنود المستحقة في اليوم نفسه)"
+
+#. module: purchase_split_grn
+#: model:ir.model,name:purchase_split_grn.model_purchase_order
+msgid "Purchase Order"
+msgstr "أمر الشراء"
+
+#. module: purchase_split_grn
+#: model:ir.model,name:purchase_split_grn.model_purchase_order_line
+msgid "Purchase Order Line"
+msgstr "بند أمر الشراء"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_purchase_order__split_grn_active
+msgid "Receipt Splitting Active"
+msgstr "تقسيم الإيصالات مفعّل"
+
+#. module: purchase_split_grn
+#: model_terms:ir.ui.view,arch_db:purchase_split_grn.res_config_settings_view_form_purchase_split_grn
+msgid ""
+"Receive lines in other warehouses of the company, one receipt per warehouse "
+"with its own receipt operation"
+msgstr ""
+"استلام البنود في مستودعات أخرى للشركة، بإيصال استلام واحد لكل مستودع بعملية "
+"الاستلام الخاصة به"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_purchase_order_line__warehouse_id
+msgid "Receiving Warehouse"
+msgstr "مستودع الاستلام"
+
+#. module: purchase_split_grn
+#: model_terms:ir.ui.view,arch_db:purchase_split_grn.res_config_settings_view_form_purchase_split_grn
+msgid "Select at least one criterion, otherwise receipts are not split."
+msgstr "اختر معيارًا واحدًا على الأقل، وإلا فلن يتم تقسيم إيصالات الاستلام."
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_config_settings__group_split_grn_by_date
+msgid "Show Line Arrival Dates"
+msgstr "إظهار تواريخ وصول البنود"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_company__split_grn_enabled
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_config_settings__split_grn_enabled
+msgid "Split Receipts"
+msgstr "تقسيم إيصالات الاستلام"
+
+#. module: purchase_split_grn
+#: model_terms:ir.ui.view,arch_db:purchase_split_grn.res_config_settings_view_form_purchase_split_grn
+msgid "Split Receipts (GRN)"
+msgstr "تقسيم إيصالات الاستلام (GRN)"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_purchase_order__split_grn_by_date_active
+msgid "Split Receipts by Date"
+msgstr "تقسيم إيصالات الاستلام حسب التاريخ"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_purchase_order__split_grn_location_active
+msgid "Split Receipts by Location"
+msgstr "تقسيم إيصالات الاستلام حسب الموقع"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_purchase_order__split_grn_warehouse_active
+msgid "Split Receipts by Warehouse"
+msgstr "تقسيم إيصالات الاستلام حسب المستودع"
+
+#. module: purchase_split_grn
+#: model:res.groups,name:purchase_split_grn.group_split_grn_by_date
+msgid "Split Receipts: Show Line Arrival Dates"
+msgstr "تقسيم إيصالات الاستلام: إظهار تواريخ وصول البنود"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_company__split_grn_by_date
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_config_settings__split_grn_by_date
+msgid "Split by Delivery Date"
+msgstr "التقسيم حسب تاريخ التسليم"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_company__split_grn_by_location
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_config_settings__split_grn_by_location
+msgid "Split by Destination Location"
+msgstr "التقسيم حسب موقع الوجهة"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_company__split_grn_by_warehouse
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_config_settings__split_grn_by_warehouse
+msgid "Split by Warehouse"
+msgstr "التقسيم حسب المستودع"
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,help:purchase_split_grn.field_res_company__split_grn_enabled
+#: model:ir.model.fields,help:purchase_split_grn.field_res_config_settings__split_grn_enabled
+msgid ""
+"Split the receipts generated by confirmed purchase orders according to the "
+"selected criteria."
+msgstr ""
+"تقسيم إيصالات الاستلام الناتجة عن أوامر الشراء المؤكدة وفقًا للمعايير "
+"المحددة."
+
+#. module: purchase_split_grn
+#. odoo-python
+#: code:addons/purchase_split_grn/models/purchase_order_line.py:0
+#, python-format
+msgid ""
+"The destination location \"%(location)s\" of line \"%(line)s\" belongs to "
+"warehouse \"%(loc_wh)s\", but the line is received in warehouse "
+"\"%(order_wh)s\"."
+msgstr ""
+"موقع الوجهة \"%(location)s\" للبند \"%(line)s\" يتبع المستودع "
+"\"%(loc_wh)s\"، بينما يتم استلام البند في المستودع \"%(order_wh)s\"."
+
+#. module: purchase_split_grn
+#. odoo-python
+#: code:addons/purchase_split_grn/models/purchase_order_line.py:0
+#, python-format
+msgid ""
+"The destination of line \"%s\" cannot be changed because its receipt is "
+"already linked to further operations (multi-step reception or make-to-"
+"order). Change it directly on the transfer instead."
+msgstr ""
+"لا يمكن تغيير وجهة البند \"%s\" لأن إيصال الاستلام الخاص به مرتبط بالفعل "
+"بعمليات لاحقة (استلام متعدد الخطوات أو التصنيع حسب الطلب). قم بتغييرها "
+"مباشرةً من الشحنة بدلًا من ذلك."
+
+#. module: purchase_split_grn
+#. odoo-python
+#: code:addons/purchase_split_grn/models/purchase_order_line.py:0
+#, python-format
+msgid ""
+"The quantities on your purchase order indicate less than billed. You should "
+"ask for a refund."
+msgstr ""
+"تشير الكميات في أمر الشراء إلى أقل مما تمت فوترته. يجب عليك طلب استرداد."
+
+#. module: purchase_split_grn
+#: model:ir.model,name:purchase_split_grn.model_stock_picking
+msgid "Transfer"
+msgstr "الشحنة"
+
+#. module: purchase_split_grn
+#. odoo-python
+#: code:addons/purchase_split_grn/models/purchase_order_line.py:0
+#, python-format
+msgid "Warehouse \"%s\" has no active receipt operation type."
+msgstr "لا يحتوي المستودع \"%s\" على نوع عملية استلام نشط."
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,help:purchase_split_grn.field_purchase_order_line__warehouse_id
+msgid ""
+"Warehouse this line is received in. Defaults to the warehouse of the order's"
+" \"Deliver To\" operation; used to split receipts when \"Split by "
+"Warehouse\" is enabled."
+msgstr ""
+"المستودع الذي يُستلم فيه هذا البند. القيمة الافتراضية هي مستودع عملية "
+"\"التوصيل إلى\" في الأمر؛ ويُستخدم لتقسيم إيصالات الاستلام عند تفعيل "
+"\"التقسيم حسب المستودع\"."
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,help:purchase_split_grn.field_purchase_order_line__location_dest_id
+msgid ""
+"Where this line is received. Defaults to the receipt location of the order; "
+"used to split receipts when \"Split by Destination Location\" is enabled."
+msgstr ""
+"المكان الذي يُستلم فيه هذا البند. القيمة الافتراضية هي موقع الاستلام في "
+"الأمر؛ ويُستخدم لتقسيم إيصالات الاستلام عند تفعيل \"التقسيم حسب موقع "
+"الوجهة\"."
+
+#. module: purchase_split_grn
+#. odoo-python
+#: code:addons/purchase_split_grn/models/purchase_order_line.py:0
+#, python-format
+msgid ""
+"You cannot decrease the ordered quantity below the received quantity.\n"
+"Create a return first."
+msgstr ""
+"لا يمكنك تقليل الكمية المطلوبة إلى أقل من الكمية المستلمة.\n"
+"قم بإنشاء مرتجع أولًا."
