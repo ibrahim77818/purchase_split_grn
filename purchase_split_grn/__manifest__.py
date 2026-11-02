@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Purchase Split Receipts (GRN) by Date, Location & Warehouse',
-    'version': '16.0.1.1.0',
+    'version': '18.0.1.0.0',
     'category': 'Inventory/Purchase',
     'summary': 'Automatically split purchase receipts by expected arrival date, '
                'destination location and/or warehouse per purchase order line',

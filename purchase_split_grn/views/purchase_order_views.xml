@@ -11,31 +11,31 @@
                 <field name="split_grn_location_active" invisible="1"/>
                 <field name="split_grn_warehouse_active" invisible="1"/>
             </xpath>
-            <xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="after">
+            <xpath expr="//field[@name='order_line']/list/field[@name='date_planned']" position="after">
                 <field name="warehouse_id" optional="show"
                        options="{'no_create': True}"
                        domain="[('company_id', '=', parent.company_id)]"
-                       attrs="{'column_invisible': ['|', ('parent.split_grn_warehouse_active', '=', False), ('parent.default_location_dest_id_usage', 'not in', ('internal', 'transit'))],
-                               'readonly': ['|', ('display_type', '!=', False), ('parent.state', 'in', ('done', 'cancel'))],
-                               'required': [('display_type', '=', False), ('parent.split_grn_warehouse_active', '=', True), ('parent.default_location_dest_id_usage', 'in', ('internal', 'transit'))]}"/>
+                       column_invisible="not parent.split_grn_warehouse_active or parent.default_location_dest_id_usage not in ('internal', 'transit')"
+                       readonly="display_type or is_downpayment or parent.state in ('done', 'cancel')"
+                       required="not display_type and not is_downpayment and parent.split_grn_warehouse_active and parent.default_location_dest_id_usage in ('internal', 'transit')"/>
                 <field name="location_dest_id" optional="show"
                        groups="stock.group_stock_multi_locations"
                        options="{'no_create': True}"
                        domain="[('usage', 'in', ('internal', 'transit')), '|', ('company_id', '=', False), ('company_id', '=', parent.company_id), '|', ('warehouse_id', '=', False), ('warehouse_id', '=', warehouse_id)]"
-                       attrs="{'column_invisible': [('parent.split_grn_location_active', '=', False)],
-                               'readonly': ['|', ('display_type', '!=', False), ('parent.state', 'in', ('done', 'cancel'))],
-                               'required': [('display_type', '=', False), ('parent.split_grn_location_active', '=', True), ('parent.default_location_dest_id_usage', 'in', ('internal', 'transit'))]}"/>
+                       column_invisible="not parent.split_grn_location_active"
+                       readonly="display_type or is_downpayment or parent.state in ('done', 'cancel')"
+                       required="not display_type and not is_downpayment and parent.split_grn_location_active and parent.default_location_dest_id_usage in ('internal', 'transit')"/>
             </xpath>
             <xpath expr="//field[@name='order_line']/form//field[@name='date_planned']" position="after">
                 <field name="warehouse_id"
                        options="{'no_create': True}"
                        domain="[('company_id', '=', parent.company_id)]"
-                       attrs="{'invisible': ['|', ('display_type', '!=', False), ('parent.split_grn_warehouse_active', '=', False)]}"/>
+                       invisible="display_type or is_downpayment or not parent.split_grn_warehouse_active"/>
                 <field name="location_dest_id"
                        groups="stock.group_stock_multi_locations"
                        options="{'no_create': True}"
                        domain="[('usage', 'in', ('internal', 'transit')), '|', ('company_id', '=', False), ('company_id', '=', parent.company_id), '|', ('warehouse_id', '=', False), ('warehouse_id', '=', warehouse_id)]"
-                       attrs="{'invisible': ['|', ('display_type', '!=', False), ('parent.split_grn_location_active', '=', False)]}"/>
+                       invisible="display_type or is_downpayment or not parent.split_grn_location_active"/>
             </xpath>
         </field>
     </record>
@@ -47,13 +47,14 @@
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="attributes">
+            <xpath expr="//field[@name='order_line']/list/field[@name='date_planned']" position="attributes">
                 <attribute name="groups">!purchase_split_grn.group_split_grn_by_date</attribute>
             </xpath>
-            <xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="after">
+            <xpath expr="//field[@name='order_line']/list/field[@name='date_planned']" position="after">
                 <field name="date_planned" optional="show" force_save="1"
                        groups="purchase_split_grn.group_split_grn_by_date"
-                       attrs="{'required': [('display_type', '=', False)]}"/>
+                       required="not display_type and not is_downpayment"
+                       readonly="is_downpayment"/>
             </xpath>
         </field>
     </record>

@@ -120,10 +120,11 @@ class PurchaseOrder(models.Model):
     def _split_grn_post_origin(self, pickings):
         self.ensure_one()
         for picking in pickings:
-            picking.message_post_with_view(
+            picking.message_post_with_source(
                 'mail.message_origin_link',
-                values={'self': picking, 'origin': self},
-                subtype_id=self.env.ref('mail.mt_note').id)
+                render_values={'self': picking, 'origin': self},
+                subtype_xmlid='mail.mt_note',
+            )
 
     @api.model
     def _split_grn_cleanup_pickings(self, pickings):
@@ -151,7 +152,7 @@ class PurchaseOrder(models.Model):
     def _split_grn_create_pickings(self):
         self.ensure_one()
         lines = self.order_line.filtered(
-            lambda l: not l.display_type and l.product_id.type in ('product', 'consu'))
+            lambda l: not l.display_type and not l.is_downpayment and l.product_id.type == 'consu')
         if not lines:
             return self.env['stock.picking']
 
