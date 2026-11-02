@@ -15,7 +15,7 @@ class TestPurchaseSplitGrn(TransactionCase):
         super().setUpClass()
         cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True))
         cls.env.user.tz = 'Asia/Riyadh'
-        cls.env.user.groups_id += cls.env.ref('stock.group_stock_multi_locations')
+        cls.env.user.group_ids += cls.env.ref('stock.group_stock_multi_locations')
         cls.company = cls.env.company
         cls.warehouse = cls.env['stock.warehouse'].search([('company_id', '=', cls.company.id)], limit=1)
         cls.stock = cls.warehouse.lot_stock_id
@@ -25,10 +25,10 @@ class TestPurchaseSplitGrn(TransactionCase):
         cls.other_wh = cls.env['stock.warehouse'].create({'name': 'Other WH', 'code': 'OWH'})
         cls.vendor = cls.env['res.partner'].create({'name': 'Split Vendor'})
         Product = cls.env['product.product']
-        cls.p1 = Product.create({'name': 'P1', 'type': 'product'})
-        cls.p2 = Product.create({'name': 'P2', 'type': 'product'})
+        cls.p1 = Product.create({'name': 'P1', 'type': 'consu', 'is_storable': True})
+        cls.p2 = Product.create({'name': 'P2', 'type': 'consu', 'is_storable': True})
         cls.p3 = Product.create({'name': 'P3', 'type': 'consu'})
-        cls.p4 = Product.create({'name': 'P4', 'type': 'product'})
+        cls.p4 = Product.create({'name': 'P4', 'type': 'consu', 'is_storable': True})
         cls.service = Product.create({'name': 'Freight', 'type': 'service'})
         # 09:00 Riyadh time = 06:00 UTC, so the local day equals the UTC day
         base = fields.Datetime.now().replace(hour=6, minute=0, second=0, microsecond=0)
@@ -65,6 +65,11 @@ class TestPurchaseSplitGrn(TransactionCase):
         if confirm:
             po.button_confirm()
         return po
+
+    def _receive(self, picking, qty):
+        """Done quantities live in ``quantity`` + ``picked``."""
+        picking.move_ids.write({'quantity': qty, 'picked': True})
+        picking.button_validate()
 
     def _picking_of(self, line):
         pickings = line.move_ids.filtered(lambda m: m.state != 'cancel').picking_id
@@ -200,8 +205,7 @@ class TestPurchaseSplitGrn(TransactionCase):
             {'product': self.p2, 'date': self.d2, 'location': self.shelf_b},
         ])
         first = self._picking_of(po.order_line[0])
-        first.move_ids.quantity_done = 10.0
-        first.button_validate()
+        self._receive(first, 10.0)
         self.assertEqual(first.state, 'done')
         self.assertEqual(po.order_line[0].qty_received, 10.0)
         self.assertEqual(po.order_line[1].qty_received, 0.0)
@@ -298,10 +302,11 @@ class TestPurchaseSplitGrn(TransactionCase):
         po = self._po([{'product': self.p1, 'date': self.d1}, {'product': self.p2, 'date': self.d2}])
         l2 = po.order_line[1]
         picking = self._picking_of(l2)
-        l2.move_ids.move_line_ids.qty_done = 4.0
+        l2.move_ids.move_line_ids.write({'quantity': 4.0, 'picked': True})
         l2.date_planned = self.d1
         self.assertEqual(self._picking_of(l2), picking)
-        self.assertEqual(l2.move_ids.move_line_ids.qty_done, 4.0)
+        self.assertEqual(l2.move_ids.move_line_ids.quantity, 4.0)
+        self.assertTrue(l2.move_ids.picked)
 
     def test_26_new_line_after_confirmation(self):
         self._configure(by_date=True, by_location=True)
@@ -349,14 +354,23 @@ class TestPurchaseSplitGrn(TransactionCase):
         for receipt in po.picking_ids:
             self.assertTrue(receipt.move_ids)
 
-    def test_28_cannot_decrease_below_received(self):
-        self._configure(by_date=True)
-        po = self._po([{'product': self.p1, 'date': self.d1}])
-        picking = po.picking_ids
-        picking.move_ids.quantity_done = 10
-        picking.button_validate()
-        with self.assertRaises(UserError):
+    def test_28_decrease_below_received_like_core(self):
+        """v19 no longer forbids lowering the ordered quantity below the received
+        one: the surplus becomes a return to the vendor. Split or not, the
+        result is the same as in standard Odoo."""
+        results = []
+        for enabled in (False, True):
+            self._configure(enabled=enabled, by_date=True, by_location=True)
+            po = self._po([{'product': self.p1, 'date': self.d1}])
+            self._receive(po.picking_ids, 10)
             po.order_line.product_qty = 5
+            open_moves = po.order_line.move_ids.filtered(lambda m: m.state not in ('done', 'cancel'))
+            results.append(sorted(
+                (m.location_id.usage, m.location_dest_id.usage, m.product_uom_qty, m.picking_id.picking_type_id.code or '')
+                for m in open_moves))
+            self.assertEqual(len(po.picking_ids), 1, 'no new receipt for a quantity below the received one')
+            self.assertEqual(po.picking_ids.state, 'done')
+        self.assertEqual(results[0], results[1])
 
     def test_29_reconfirm_after_draft_does_not_duplicate(self):
         self._configure(by_date=True, by_location=True)
@@ -381,8 +395,9 @@ class TestPurchaseSplitGrn(TransactionCase):
         self.assertEqual(len(po.picking_ids), 2, 'standard flow adds the line to an existing receipt')
 
     def test_31_multi_step_reception(self):
-        """Two-step reception: lines default to WH/Input and the chained
-        Input → Stock transfer prevents silently re-routing the receipt."""
+        """Two-step reception (v18): lines default to WH/Input, the receipt
+        carries WH/Stock as final location, and the Input -> Stock transfer is
+        created by the push rule when the receipt is validated."""
         self._configure(by_location=True)
         self.warehouse.reception_steps = 'two_steps'
         input_loc = self.warehouse.wh_input_stock_loc_id
@@ -394,9 +409,46 @@ class TestPurchaseSplitGrn(TransactionCase):
         self.assertEqual(len(po.picking_ids), 2)
         self.assertEqual(self._picking_of(l1).location_dest_id, input_loc)
         self.assertEqual(self._picking_of(l2).location_dest_id, input_dock)
-        self.assertTrue(l1.move_ids.move_dest_ids, 'push rule chained the receipt to Input -> Stock')
-        with self.assertRaises(UserError):
-            l1.location_dest_id = self.shelf_a
+        self.assertEqual(l1.move_ids.location_final_id, self.stock)
+        self.assertFalse(l1.move_ids.move_dest_ids, 'v18 pushes on validation, not on confirmation')
+        receipt = self._picking_of(l1)
+        self._receive(receipt, 10.0)
+        internal = l1.move_ids.move_dest_ids
+        self.assertTrue(internal, 'push rule chained Input -> Stock on validation')
+        self.assertEqual(internal.location_id, input_loc)
+        self.assertEqual(internal.location_dest_id, self.stock)
+
+    def test_31b_multi_step_reroute_before_receipt(self):
+        """Not yet received, the receipt is not chained yet: a line can be
+        re-routed to a stock sub-location, which becomes its final location."""
+        self._configure(by_location=True)
+        self.warehouse.reception_steps = 'two_steps'
+        po = self._po([{'product': self.p1}, {'product': self.p2}])
+        l1, l2 = po.order_line
+        self.assertEqual(len(po.picking_ids), 1)
+        l1.location_dest_id = self.shelf_a
+        self.assertEqual(len(po.picking_ids), 2)
+        self.assertEqual(self._picking_of(l1).location_dest_id, self.shelf_a)
+        self.assertEqual(l1.move_ids.location_dest_id, self.shelf_a)
+        self.assertEqual(l1.move_ids.location_final_id, self.shelf_a)
+        self.assertEqual(l2.move_ids.location_final_id, self.stock)
+
+    def test_31c_final_location_follows_line(self):
+        """v18 forecasts incoming goods on the move's final location: it must
+        follow the line's location, not stay on the order's warehouse stock."""
+        self._configure(by_location=True)
+        po = self._po([{'product': self.p1, 'location': self.shelf_a}, {'product': self.p2}])
+        l1, l2 = po.order_line
+        self.assertEqual(l1.move_ids.location_final_id, self.shelf_a)
+        self.assertEqual(l2.move_ids.location_final_id, self.stock)
+        self.assertEqual(
+            self.p1.with_context(location=self.shelf_a.id).incoming_qty, 10.0)
+        self.assertEqual(
+            self.p1.with_context(location=self.shelf_b.id).incoming_qty, 0.0)
+        l1.location_dest_id = self.shelf_b
+        self.assertEqual(l1.move_ids.location_final_id, self.shelf_b)
+        self.assertEqual(
+            self.p1.with_context(location=self.shelf_b.id).incoming_qty, 10.0)
 
     def test_32_lines_without_stockable_products(self):
         self._configure(by_date=True, by_location=True)
@@ -422,7 +474,7 @@ class TestPurchaseSplitGrn(TransactionCase):
         self.env['stock.warehouse.orderpoint'].create({
             'product_id': self.p1.id, 'location_id': self.shelf_a.id,
             'warehouse_id': self.warehouse.id, 'product_min_qty': 4, 'product_max_qty': 8})
-        self.env['procurement.group'].run_scheduler()
+        self.env['stock.rule'].run_scheduler()
         po = self.env['purchase.order'].search([('partner_id', '=', self.vendor.id)])
         self.assertEqual(len(po), 1)
         self.assertEqual(po.order_line.location_dest_id, self.stock)
@@ -512,8 +564,7 @@ class TestPurchaseSplitGrn(TransactionCase):
         self._configure(by_warehouse=True)
         po = self._po_wh([{'product': self.p1}, {'product': self.p2, 'warehouse': self.other_wh}])
         other = self._picking_of(po.order_line[1])
-        other.move_ids.quantity_done = 10
-        other.button_validate()
+        self._receive(other, 10)
         self.assertEqual(other.state, 'done')
         self.assertEqual(po.order_line[1].qty_received, 10)
         self.assertEqual(po.order_line[0].qty_received, 0)
@@ -561,11 +612,32 @@ class TestPurchaseSplitGrn(TransactionCase):
         po = self._po_wh([{'product': self.p1, 'warehouse': self.other_wh}])
         receipt = po.picking_ids
         self.assertEqual(receipt.location_dest_id, self.other_wh.wh_input_stock_loc_id)
+        self.assertEqual(receipt.move_ids.location_final_id, self.other_wh.lot_stock_id)
+        self.assertEqual(receipt.move_ids.warehouse_id, self.other_wh)
+        self.assertEqual(
+            self.p1.with_context(warehouse_id=self.other_wh.id).incoming_qty, 10.0,
+            'the forecast counts the goods in the receiving warehouse')
+        self.assertEqual(self.p1.with_context(warehouse_id=self.warehouse.id).incoming_qty, 0.0)
+        self._receive(receipt, 10.0)
         internal = receipt.move_ids.move_dest_ids.picking_id
-        self.assertEqual(internal.picking_type_id, self.other_wh.int_type_id,
+        self.assertEqual(internal.picking_type_id, self.other_wh.store_type_id,
                          'the other warehouse\'s own push rule handles Input -> Stock')
-        with self.assertRaises(UserError):
-            po.order_line.warehouse_id = self.warehouse
+        self.assertEqual(internal.location_dest_id, self.other_wh.lot_stock_id)
+
+    def test_48b_other_warehouse_forecast_one_step(self):
+        self._configure(by_warehouse=True)
+        po = self._po_wh([{'product': self.p1, 'warehouse': self.other_wh},
+                          {'product': self.p1}])
+        jed, main = po.order_line
+        self.assertEqual(jed.move_ids.location_final_id, self.other_wh.lot_stock_id)
+        self.assertEqual(main.move_ids.location_final_id, self.stock)
+        self.assertEqual(self.p1.with_context(warehouse_id=self.other_wh.id).incoming_qty, 10.0)
+        self.assertEqual(self.p1.with_context(warehouse_id=self.warehouse.id).incoming_qty, 10.0)
+        # moving the line back to the main warehouse moves its forecast too
+        jed.warehouse_id = self.warehouse
+        self.assertEqual(jed.move_ids.location_final_id, self.stock)
+        self.assertEqual(self.p1.with_context(warehouse_id=self.other_wh.id).incoming_qty, 0.0)
+        self.assertEqual(self.p1.with_context(warehouse_id=self.warehouse.id).incoming_qty, 20.0)
 
     def test_49_warehouse_setting_persists(self):
         settings = self.env['res.config.settings'].create({
@@ -586,3 +658,33 @@ class TestPurchaseSplitGrn(TransactionCase):
         self.assertEqual(po.order_line.location_dest_id, self.other_wh.lot_stock_id)
         po.button_confirm()
         self.assertEqual(po.picking_ids.picking_type_id, self.other_wh.in_type_id)
+
+    def test_51_split_receipts_link_back_to_order(self):
+        """Every receipt created by the split engine gets the standard
+        'created from <PO>' note (message_post_with_source)."""
+        self._configure(by_date=True, by_warehouse=True)
+        po = self._po_wh([{'product': self.p1, 'date': self.d1},
+                          {'product': self.p2, 'date': self.d2},
+                          {'product': self.p3, 'date': self.d1, 'warehouse': self.other_wh}])
+        self.assertEqual(len(po.picking_ids), 3)
+        for picking in po.picking_ids:
+            notes = picking.message_ids.filtered(
+                lambda m: m.subtype_id == self.env.ref('mail.mt_note') and po.name in (m.body or ''))
+            self.assertTrue(notes, 'receipt %s has no origin note' % picking.name)
+        # a receipt created later by a date change gets one too
+        po.order_line[0].date_planned = self.d3
+        new = self._picking_of(po.order_line[0])
+        self.assertTrue(new.message_ids.filtered(lambda m: po.name in (m.body or '')))
+
+    def test_52_edited_quantity_without_picked_is_not_moved(self):
+        """A counted quantity typed on the receipt without ticking
+        'picked' still protects the move from being re-routed."""
+        self._configure(by_date=True)
+        po = self._po([{'product': self.p1, 'date': self.d1}, {'product': self.p2, 'date': self.d2}])
+        l2 = po.order_line[1]
+        picking = self._picking_of(l2)
+        l2.move_ids.quantity = 7.0
+        self.assertFalse(l2.move_ids.picked)
+        l2.date_planned = self.d1
+        self.assertEqual(self._picking_of(l2), picking)
+        self.assertEqual(l2.move_ids.quantity, 7.0)

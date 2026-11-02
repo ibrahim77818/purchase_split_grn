@@ -5,44 +5,35 @@
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="purchase.res_config_settings_view_form_purchase"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[@name='purchase_setting_container']" position="after">
-                <h2>Inbound Logistics</h2>
-                <div class="row mt16 o_settings_container" name="split_grn_setting_container">
-                    <div class="col-12 col-lg-6 o_setting_box" id="split_grn_settings">
-                        <div class="o_setting_left_pane">
-                            <field name="split_grn_enabled"/>
+            <xpath expr="//block[@name='purchase_setting_container']" position="after">
+                <block title="Inbound Logistics" name="split_grn_setting_container">
+                    <setting id="split_grn_settings" string="Split Receipts (GRN)" company_dependent="1"
+                             help="Generate separate receipts for a confirmed purchase order based on line criteria">
+                        <field name="split_grn_enabled"/>
+                        <div class="content-group" invisible="not split_grn_enabled">
                             <field name="split_grn_by_warehouse" invisible="1"/>
-                        </div>
-                        <div class="o_setting_right_pane">
-                            <label for="split_grn_enabled" string="Split Receipts (GRN)"/>
-                            <span class="fa fa-lg fa-building-o" title="Values set here are company-specific." groups="base.group_multi_company"/>
-                            <div class="text-muted">
-                                Generate separate receipts for a confirmed purchase order based on line criteria
+                            <div class="mt16">
+                                <field name="split_grn_by_date" class="oe_inline"/>
+                                <label for="split_grn_by_date" class="o_light_label"/>
+                                <div class="text-muted ms-4">One receipt per expected arrival date (lines due the same day are grouped)</div>
                             </div>
-                            <div class="content-group" attrs="{'invisible': [('split_grn_enabled', '=', False)]}">
-                                <div class="mt16">
-                                    <field name="split_grn_by_date" class="oe_inline"/>
-                                    <label for="split_grn_by_date" class="o_light_label"/>
-                                    <div class="text-muted ms-4">One receipt per expected arrival date (lines due the same day are grouped)</div>
-                                </div>
-                                <div class="mt8">
-                                    <field name="split_grn_by_location" class="oe_inline"/>
-                                    <label for="split_grn_by_location" class="o_light_label"/>
-                                    <div class="text-muted ms-4">One receipt per destination location set on the order lines</div>
-                                </div>
-                                <div class="mt8" groups="stock.group_stock_multi_warehouses">
-                                    <field name="split_grn_by_warehouse" class="oe_inline"/>
-                                    <label for="split_grn_by_warehouse" class="o_light_label"/>
-                                    <div class="text-muted ms-4">Receive lines in other warehouses of the company, one receipt per warehouse with its own receipt operation</div>
-                                </div>
-                                <div class="alert alert-warning mt8 mb-0" role="alert"
-                                     attrs="{'invisible': ['|', '|', ('split_grn_by_date', '=', True), ('split_grn_by_location', '=', True), ('split_grn_by_warehouse', '=', True)]}">
-                                    Select at least one criterion, otherwise receipts are not split.
-                                </div>
+                            <div class="mt8">
+                                <field name="split_grn_by_location" class="oe_inline"/>
+                                <label for="split_grn_by_location" class="o_light_label"/>
+                                <div class="text-muted ms-4">One receipt per destination location set on the order lines</div>
+                            </div>
+                            <div class="mt8" groups="stock.group_stock_multi_warehouses">
+                                <field name="split_grn_by_warehouse" class="oe_inline"/>
+                                <label for="split_grn_by_warehouse" class="o_light_label"/>
+                                <div class="text-muted ms-4">Receive lines in other warehouses of the company, one receipt per warehouse with its own receipt operation</div>
+                            </div>
+                            <div class="alert alert-warning mt8 mb-0" role="alert"
+                                 invisible="split_grn_by_date or split_grn_by_location or split_grn_by_warehouse">
+                                Select at least one criterion, otherwise receipts are not split.
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </setting>
+                </block>
             </xpath>
         </field>
     </record>

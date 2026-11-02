@@ -27,12 +27,14 @@ class PurchaseOrderLine(models.Model):
         help='Where this line is received. Defaults to the receipt location of the '
              'order; used to split receipts when "Split by Destination Location" is enabled.')
 
-    @api.depends('order_id.picking_type_id', 'display_type')
+    @api.depends('order_id.picking_type_id', 'display_type', 'is_downpayment')
     def _compute_warehouse_id(self):
         for line in self:
-            line.warehouse_id = False if line.display_type else line.order_id.picking_type_id.warehouse_id
+            line.warehouse_id = False if (line.display_type or line.is_downpayment) \
+                else line.order_id.picking_type_id.warehouse_id
 
-    @api.depends('order_id.picking_type_id', 'order_id.dest_address_id', 'warehouse_id', 'display_type')
+    @api.depends('order_id.picking_type_id', 'order_id.dest_address_id', 'warehouse_id',
+                 'display_type', 'is_downpayment')
     def _compute_location_dest_id(self):
         """Default to the receipt location of the line's warehouse: the order's
         own receipt location in its warehouse, or the receipt location of the
@@ -42,7 +44,7 @@ class PurchaseOrderLine(models.Model):
         Location = self.env['stock.location']
         for line in self:
             order = line.order_id
-            if line.display_type or not order or not order.picking_type_id:
+            if line.display_type or line.is_downpayment or not order or not order.picking_type_id:
                 line.location_dest_id = False
                 continue
             order_warehouse = order.picking_type_id.warehouse_id
@@ -142,35 +144,67 @@ class PurchaseOrderLine(models.Model):
     def _prepare_stock_move_vals(self, picking, price_unit, product_uom_qty, product_uom):
         vals = super()._prepare_stock_move_vals(picking, price_unit, product_uom_qty, product_uom)
         if self.order_id.split_grn_active and picking and picking.location_dest_id:
+            Location = self.env['stock.location']
             target = picking.location_dest_id
-            current = self.env['stock.location'].browse(vals.get('location_dest_id'))
-            # keep a more specific child location (e.g. a reordering rule's)
-            if current != target and not (target.parent_path
-                                          and (current.parent_path or '').startswith(target.parent_path)):
-                vals['location_dest_id'] = target.id
+            current = Location.browse(vals.get('location_dest_id'))
             picking_type = picking.picking_type_id
+            changed = False
+            # keep a more specific child location (e.g. a reordering rule's)
+            if current != target and not current._child_of(target):
+                vals['location_dest_id'] = target.id
+                changed = True
             if picking_type and picking_type != self.order_id.picking_type_id:
                 vals['picking_type_id'] = picking_type.id
                 vals['warehouse_id'] = picking_type.warehouse_id.id
+                changed = True
+            if changed:
+                final = self._split_grn_final_location(
+                    Location.browse(vals['location_dest_id']), picking_type,
+                    Location.browse(vals.get('location_final_id')))
+                vals['location_final_id'] = final.id
+                if final._child_of(Location.browse(vals['location_dest_id'])):
+                    vals['location_dest_id'] = final.id
         return vals
+
+    def _split_grn_final_location(self, location_dest, picking_type, current_final):
+        """Final location (v18 ``location_final_id``) of a move sent to
+        ``location_dest`` through ``picking_type``.
+
+        The forecast of not-yet-received goods is computed on the final
+        location, so it must follow the line to its warehouse/location:
+
+        * a final location already inside the destination (e.g. a reordering
+          rule's sub-location) is kept;
+        * a receipt into the operation type's default destination (e.g. the
+          Input location of a 2/3-step warehouse) keeps the chain going to
+          that warehouse's stock, like standard Odoo;
+        * otherwise the line's chosen location is the final location."""
+        self.ensure_one()
+        if current_final and current_final._child_of(location_dest) \
+                and (not picking_type.warehouse_id
+                     or current_final.warehouse_id == picking_type.warehouse_id):
+            return current_final
+        if location_dest == picking_type.default_location_dest_id:
+            stock = picking_type.warehouse_id.lot_stock_id
+            if stock and not location_dest._child_of(stock):
+                return stock
+        return location_dest
 
     def _create_or_update_picking(self):
         split_lines = self.filtered(lambda l: l.order_id.split_grn_active)
         super(PurchaseOrderLine, self - split_lines)._create_or_update_picking()
         created_by_order = {}
         for line in split_lines:
-            if not (line.product_id and line.product_id.type in ('product', 'consu')):
+            if not (line.product_id and line.product_id.type == 'consu'):
                 continue
-            rounding = line.product_uom.rounding
-            if float_compare(line.product_qty, line.qty_received, precision_rounding=rounding) < 0:
-                raise UserError(_('You cannot decrease the ordered quantity below the received quantity.\n'
-                                  'Create a return first.'))
+            rounding = line.product_uom_id.rounding
             if float_compare(line.product_qty, line.qty_invoiced, precision_rounding=rounding) < 0 \
                     and line.invoice_lines:
                 line.invoice_lines[0].move_id.activity_schedule(
                     'mail.mail_activity_data_warning',
                     note=_('The quantities on your purchase order indicate less than billed. '
-                           'You should ask for a refund.'))
+                           'You should ask for a refund.'),
+                    user_id=self.env.uid)
             order = line.order_id.with_company(line.company_id)
             key = line._split_grn_key()
             picking = order._split_grn_find_picking(key, preferred=line.move_ids.picking_id)
@@ -195,7 +229,7 @@ class PurchaseOrderLine(models.Model):
         # through recomputation (e.g. a quantity change recomputing date_planned).
         previous_keys = {}
         for line in self:
-            if line.order_id.state == 'purchase' and not line.display_type \
+            if line.order_id.state == 'purchase' and not line.display_type and not line.is_downpayment \
                     and line.order_id.split_grn_active:
                 previous_keys[line] = line._split_grn_key()
         result = super().write(vals)
@@ -209,14 +243,32 @@ class PurchaseOrderLine(models.Model):
         return result
 
     def _split_grn_movable_moves(self):
-        """Open incoming moves of the line that are not yet being processed."""
+        """Open incoming moves of the line that nobody has started processing.
+
+        An incoming move's ``quantity`` is pre-filled with its demand
+        when it is assigned, so a move counts as being processed when it (or
+        one of its move lines) is marked *picked*, or when its quantity was
+        edited away from the demand. Such moves are never moved: rerouting
+        unreserves the move and would reset the counted quantity."""
         self.ensure_one()
+
+        def untouched(move):
+            if move.picked or any(move.move_line_ids.mapped('picked')):
+                return False
+            # supplier moves are fully available once assigned; a quantity
+            # differing from the demand means somebody typed a count
+            if move.state in ('assigned', 'partially_available') and float_compare(
+                    move.quantity, move.product_uom_qty,
+                    precision_rounding=move.product_uom.rounding) != 0:
+                return False
+            return True
+
         return self.move_ids.filtered(
             lambda m: m.state not in ('done', 'cancel')
             and m.picking_id
             and m.location_id.usage == 'supplier'
             and m.location_dest_id.usage != 'supplier'
-            and not any(ml.qty_done for ml in m.move_line_ids))
+            and untouched(m))
 
     def _split_grn_reroute_moves(self):
         """Move the open stock moves of lines whose split key changed into the
@@ -272,9 +324,20 @@ class PurchaseOrderLine(models.Model):
                     if move.picking_type_id != target_type:
                         move_vals['picking_type_id'] = target_type.id
                         move_vals['warehouse_id'] = target_type.warehouse_id.id
-                    if move.location_dest_id != target_location and not (
-                            (move.location_dest_id.parent_path or '').startswith(target_location.parent_path)):
+                    if move.location_dest_id != target_location \
+                            and not move.location_dest_id._child_of(target_location):
                         move_vals['location_dest_id'] = target_location.id
+                    new_dest = self.env['stock.location'].browse(
+                        move_vals.get('location_dest_id', move.location_dest_id.id))
+                    final = move.purchase_line_id._split_grn_final_location(
+                        new_dest, target_type, move.location_final_id)
+                    if final != move.location_final_id:
+                        move_vals['location_final_id'] = final.id
+                    if final != new_dest and final._child_of(new_dest):
+                        move_vals['location_dest_id'] = final.id
+                    # the move's destination is recomputed from its receipt, then
+                    # follows a final location below it (stock.move compute)
+                    move_vals.setdefault('location_dest_id', move.location_dest_id.id)
                     if order.split_grn_by_date_active and move.purchase_line_id.date_planned:
                         move_vals['date'] = move.purchase_line_id.date_planned
                     move.write(move_vals)

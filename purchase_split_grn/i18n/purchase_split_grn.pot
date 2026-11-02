@@ -4,23 +4,16 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 16.0\n"
+"Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-01 16:56+0000\n"
-"PO-Revision-Date: 2026-11-01 16:56+0000\n"
+"POT-Creation-Date: 2026-11-02 17:39+0000\n"
+"PO-Revision-Date: 2026-11-02 17:39+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
-
-#. module: purchase_split_grn
-#: model_terms:ir.ui.view,arch_db:purchase_split_grn.res_config_settings_view_form_purchase_split_grn
-msgid ""
-"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
-"specific.\" groups=\"base.group_multi_company\"/>"
-msgstr ""
 
 #. module: purchase_split_grn
 #: model:ir.model,name:purchase_split_grn.model_res_company
@@ -52,6 +45,15 @@ msgid "Destination Location"
 msgstr ""
 
 #. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_purchase_order__display_name
+#: model:ir.model.fields,field_description:purchase_split_grn.field_purchase_order_line__display_name
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_company__display_name
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_config_settings__display_name
+#: model:ir.model.fields,field_description:purchase_split_grn.field_stock_picking__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: purchase_split_grn
 #: model:ir.model.fields,help:purchase_split_grn.field_stock_picking__split_grn_date
 msgid "Expected arrival date this receipt groups purchase order lines by."
 msgstr ""
@@ -66,6 +68,15 @@ msgstr ""
 #. module: purchase_split_grn
 #: model:ir.model.fields,field_description:purchase_split_grn.field_stock_picking__split_grn_date
 msgid "Grouped Arrival Date"
+msgstr ""
+
+#. module: purchase_split_grn
+#: model:ir.model.fields,field_description:purchase_split_grn.field_purchase_order__id
+#: model:ir.model.fields,field_description:purchase_split_grn.field_purchase_order_line__id
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_company__id
+#: model:ir.model.fields,field_description:purchase_split_grn.field_res_config_settings__id
+#: model:ir.model.fields,field_description:purchase_split_grn.field_stock_picking__id
+msgid "ID"
 msgstr ""
 
 #. module: purchase_split_grn
@@ -189,7 +200,6 @@ msgstr ""
 #. module: purchase_split_grn
 #. odoo-python
 #: code:addons/purchase_split_grn/models/purchase_order_line.py:0
-#, python-format
 msgid ""
 "The destination location \"%(location)s\" of line \"%(line)s\" belongs to "
 "warehouse \"%(loc_wh)s\", but the line is received in warehouse "
@@ -199,7 +209,6 @@ msgstr ""
 #. module: purchase_split_grn
 #. odoo-python
 #: code:addons/purchase_split_grn/models/purchase_order_line.py:0
-#, python-format
 msgid ""
 "The destination of line \"%s\" cannot be changed because its receipt is "
 "already linked to further operations (multi-step reception or make-to-"
@@ -209,7 +218,6 @@ msgstr ""
 #. module: purchase_split_grn
 #. odoo-python
 #: code:addons/purchase_split_grn/models/purchase_order_line.py:0
-#, python-format
 msgid ""
 "The quantities on your purchase order indicate less than billed. You should "
 "ask for a refund."
@@ -223,7 +231,6 @@ msgstr ""
 #. module: purchase_split_grn
 #. odoo-python
 #: code:addons/purchase_split_grn/models/purchase_order_line.py:0
-#, python-format
 msgid "Warehouse \"%s\" has no active receipt operation type."
 msgstr ""
 
@@ -240,13 +247,4 @@ msgstr ""
 msgid ""
 "Where this line is received. Defaults to the receipt location of the order; "
 "used to split receipts when \"Split by Destination Location\" is enabled."
-msgstr ""
-
-#. module: purchase_split_grn
-#. odoo-python
-#: code:addons/purchase_split_grn/models/purchase_order_line.py:0
-#, python-format
-msgid ""
-"You cannot decrease the ordered quantity below the received quantity.\n"
-"Create a return first."
 msgstr ""

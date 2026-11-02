@@ -2,6 +2,5 @@
 <odoo>
     <record id="group_split_grn_by_date" model="res.groups">
         <field name="name">Split Receipts: Show Line Arrival Dates</field>
-        <field name="category_id" ref="base.module_category_hidden"/>
     </record>
 </odoo>
