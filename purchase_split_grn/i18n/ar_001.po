@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 16.0\n"
+"Project-Id-Version: Odoo Server 17.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-01 16:16+0000\n"
 "PO-Revision-Date: 2026-11-01 16:16+0000\n"
@@ -15,15 +15,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-
-#. module: purchase_split_grn
-#: model_terms:ir.ui.view,arch_db:purchase_split_grn.res_config_settings_view_form_purchase_split_grn
-msgid ""
-"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
-"specific.\" groups=\"base.group_multi_company\"/>"
-msgstr ""
-"<span class=\"fa fa-lg fa-building-o\" title=\"القيم المحددة هنا خاصة "
-"بالشركة.\" groups=\"base.group_multi_company\"/>"
 
 #. module: purchase_split_grn
 #: model:ir.model,name:purchase_split_grn.model_res_company

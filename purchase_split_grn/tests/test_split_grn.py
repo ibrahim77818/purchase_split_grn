@@ -66,6 +66,11 @@ class TestPurchaseSplitGrn(TransactionCase):
             po.button_confirm()
         return po
 
+    def _receive(self, picking, qty):
+        """v17: done quantities live in ``quantity`` + ``picked``."""
+        picking.move_ids.write({'quantity': qty, 'picked': True})
+        picking.button_validate()
+
     def _picking_of(self, line):
         pickings = line.move_ids.filtered(lambda m: m.state != 'cancel').picking_id
         self.assertEqual(len(pickings), 1, 'line %s should sit in exactly one receipt' % line.name)
@@ -200,8 +205,7 @@ class TestPurchaseSplitGrn(TransactionCase):
             {'product': self.p2, 'date': self.d2, 'location': self.shelf_b},
         ])
         first = self._picking_of(po.order_line[0])
-        first.move_ids.quantity_done = 10.0
-        first.button_validate()
+        self._receive(first, 10.0)
         self.assertEqual(first.state, 'done')
         self.assertEqual(po.order_line[0].qty_received, 10.0)
         self.assertEqual(po.order_line[1].qty_received, 0.0)
@@ -298,10 +302,11 @@ class TestPurchaseSplitGrn(TransactionCase):
         po = self._po([{'product': self.p1, 'date': self.d1}, {'product': self.p2, 'date': self.d2}])
         l2 = po.order_line[1]
         picking = self._picking_of(l2)
-        l2.move_ids.move_line_ids.qty_done = 4.0
+        l2.move_ids.move_line_ids.write({'quantity': 4.0, 'picked': True})
         l2.date_planned = self.d1
         self.assertEqual(self._picking_of(l2), picking)
-        self.assertEqual(l2.move_ids.move_line_ids.qty_done, 4.0)
+        self.assertEqual(l2.move_ids.move_line_ids.quantity, 4.0)
+        self.assertTrue(l2.move_ids.picked)
 
     def test_26_new_line_after_confirmation(self):
         self._configure(by_date=True, by_location=True)
@@ -353,8 +358,7 @@ class TestPurchaseSplitGrn(TransactionCase):
         self._configure(by_date=True)
         po = self._po([{'product': self.p1, 'date': self.d1}])
         picking = po.picking_ids
-        picking.move_ids.quantity_done = 10
-        picking.button_validate()
+        self._receive(picking, 10)
         with self.assertRaises(UserError):
             po.order_line.product_qty = 5
 
@@ -512,8 +516,7 @@ class TestPurchaseSplitGrn(TransactionCase):
         self._configure(by_warehouse=True)
         po = self._po_wh([{'product': self.p1}, {'product': self.p2, 'warehouse': self.other_wh}])
         other = self._picking_of(po.order_line[1])
-        other.move_ids.quantity_done = 10
-        other.button_validate()
+        self._receive(other, 10)
         self.assertEqual(other.state, 'done')
         self.assertEqual(po.order_line[1].qty_received, 10)
         self.assertEqual(po.order_line[0].qty_received, 0)
@@ -586,3 +589,33 @@ class TestPurchaseSplitGrn(TransactionCase):
         self.assertEqual(po.order_line.location_dest_id, self.other_wh.lot_stock_id)
         po.button_confirm()
         self.assertEqual(po.picking_ids.picking_type_id, self.other_wh.in_type_id)
+
+    def test_51_split_receipts_link_back_to_order(self):
+        """Every receipt created by the split engine gets the standard
+        'created from <PO>' note (v17: message_post_with_source)."""
+        self._configure(by_date=True, by_warehouse=True)
+        po = self._po_wh([{'product': self.p1, 'date': self.d1},
+                          {'product': self.p2, 'date': self.d2},
+                          {'product': self.p3, 'date': self.d1, 'warehouse': self.other_wh}])
+        self.assertEqual(len(po.picking_ids), 3)
+        for picking in po.picking_ids:
+            notes = picking.message_ids.filtered(
+                lambda m: m.subtype_id == self.env.ref('mail.mt_note') and po.name in (m.body or ''))
+            self.assertTrue(notes, 'receipt %s has no origin note' % picking.name)
+        # a receipt created later by a date change gets one too
+        po.order_line[0].date_planned = self.d3
+        new = self._picking_of(po.order_line[0])
+        self.assertTrue(new.message_ids.filtered(lambda m: po.name in (m.body or '')))
+
+    def test_52_edited_quantity_without_picked_is_not_moved(self):
+        """v17: a counted quantity typed on the receipt without ticking
+        'picked' still protects the move from being re-routed."""
+        self._configure(by_date=True)
+        po = self._po([{'product': self.p1, 'date': self.d1}, {'product': self.p2, 'date': self.d2}])
+        l2 = po.order_line[1]
+        picking = self._picking_of(l2)
+        l2.move_ids.quantity = 7.0
+        self.assertFalse(l2.move_ids.picked)
+        l2.date_planned = self.d1
+        self.assertEqual(self._picking_of(l2), picking)
+        self.assertEqual(l2.move_ids.quantity, 7.0)

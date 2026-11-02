@@ -209,14 +209,32 @@ class PurchaseOrderLine(models.Model):
         return result
 
     def _split_grn_movable_moves(self):
-        """Open incoming moves of the line that are not yet being processed."""
+        """Open incoming moves of the line that nobody has started processing.
+
+        In v17 an incoming move's ``quantity`` is pre-filled with its demand
+        when it is assigned, so a move counts as being processed when it (or
+        one of its move lines) is marked *picked*, or when its quantity was
+        edited away from the demand. Such moves are never moved: rerouting
+        unreserves the move and would reset the counted quantity."""
         self.ensure_one()
+
+        def untouched(move):
+            if move.picked or any(move.move_line_ids.mapped('picked')):
+                return False
+            # supplier moves are fully available once assigned; a quantity
+            # differing from the demand means somebody typed a count
+            if move.state in ('assigned', 'partially_available') and float_compare(
+                    move.quantity, move.product_uom_qty,
+                    precision_rounding=move.product_uom.rounding) != 0:
+                return False
+            return True
+
         return self.move_ids.filtered(
             lambda m: m.state not in ('done', 'cancel')
             and m.picking_id
             and m.location_id.usage == 'supplier'
             and m.location_dest_id.usage != 'supplier'
-            and not any(ml.qty_done for ml in m.move_line_ids))
+            and untouched(m))
 
     def _split_grn_reroute_moves(self):
         """Move the open stock moves of lines whose split key changed into the
